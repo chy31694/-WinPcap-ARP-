@@ -1,4 +1,4 @@
-// ArpScanner.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+ï»¿// ArpScanner.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include "stdafx.h"
@@ -24,30 +24,30 @@ using namespace std;
 #define max_num_adapter 10
 
 
-//arpÖ¡½á¹¹
+//arpå¸§ç»“æ„
 struct arp_head
 {
-	unsigned short hardware_type; //Ó²¼şÀàĞÍ
-	unsigned short protocol_type; //Ğ­ÒéÀàĞÍ
-	unsigned char hardware_add_len; //Ó²¼şµØÖ·³¤¶È
-	unsigned char protocol_add_len; //Ğ­ÒéµØÖ·³¤¶È
-	unsigned short operation_field; //²Ù×÷×Ö¶Î
-	unsigned char source_mac_add[6]; //Ô´macµØÖ·
-	unsigned long source_ip_add; //Ô´ipµØÖ·
-	unsigned char dest_mac_add[6]; //Ä¿µÄmacµØÖ·
-	unsigned long dest_ip_add; //Ä¿µÄipµØÖ·
+	unsigned short hardware_type; //ç¡¬ä»¶ç±»å‹
+	unsigned short protocol_type; //åè®®ç±»å‹
+	unsigned char hardware_add_len; //ç¡¬ä»¶åœ°å€é•¿åº¦
+	unsigned char protocol_add_len; //åè®®åœ°å€é•¿åº¦
+	unsigned short operation_field; //æ“ä½œå­—æ®µ
+	unsigned char source_mac_add[6]; //æºmacåœ°å€
+	unsigned long source_ip_add; //æºipåœ°å€
+	unsigned char dest_mac_add[6]; //ç›®çš„macåœ°å€
+	unsigned long dest_ip_add; //ç›®çš„ipåœ°å€
 };
 
-//ÒÔÌ«ÍøÖ¡
+//ä»¥å¤ªç½‘å¸§
 struct ethernet_head
 {
 	unsigned char dest_mac_add[6];
 	unsigned char source_mac_add[6];
-	unsigned short type; // Ö¡ÀàĞÍ
+	unsigned short type; // å¸§ç±»å‹
 };
 
-//arpÊı¾İ°ü
-struct arp_packet 
+//arpæ•°æ®åŒ…
+struct arp_packet
 {
 	ethernet_head eh;
 	arp_head ah;
@@ -61,91 +61,91 @@ struct pc
 
 u_char selfMac[6] = { 0 };
 u_long myip;
-pcap_t *adhandle;
+pcap_t* adhandle;
 u_long firstip, secondip;
 unsigned int HostNum = 0;
 int flag = FALSE;
 HANDLE mThread;
 
-//ÌáÊ¾ĞÅÏ¢
+//æç¤ºä¿¡æ¯
 void warmMessage()
 {
-	std::cout << "Èç¹ûÄãÏëÒªÊ¹ÓÃÕâ¸ö³ÌĞò£¬Äã±ØĞë°²×°ÁËwinpcap" << std::endl;
+	std::cout << "If you want to use this app, you must have winpcap installed." << std::endl;
 	return;
 }
 
-//´ò¿ªÍø¿¨
+//æ‰“å¼€ç½‘å¡
 int OpenIF()
 {
-	int j = 0; 
+	int j = 0;
 	int inum = 0;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	pcap_if_t *alldevs;
-	pcap_if_t *d;
+	pcap_if_t* alldevs;
+	pcap_if_t* d;
 
 
-	/*»ñÈ¡Íø¿¨ÁĞ±í*/
+	/*è·å–ç½‘å¡åˆ—è¡¨*/
 	if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf) == -1)
 	{
-		cout << "»ñÈ¡Íø¿¨ÁĞ±íÊ§°Ü" << endl;
+		cout << "Failed to get NIC list" << endl;
 		exit(1);
 	}
 
-	/*´òÓ¡Íø¿¨ĞÅÏ¢*/
+	/*æ‰“å°ç½‘å¡ä¿¡æ¯*/
 	for (d = alldevs; d != NULL; d = d->next)
 	{
 		cout << ++j << "      " << d->name << endl;
 		if (d->description)
 			cout << d->description << endl;
 		else
-			cout << "¸ÃÉè±¸Ã»ÓĞÃèÊö" << endl;
+			cout << "The device is not described" << endl;
 		cout << "\n\n" << endl;
 	}
 
 	if (j == 0)
 	{
-		cout << "ÎŞ·¨ÕÒ´òÍø¿¨Éè±¸" << endl;
+		cout << "Unable to find a network card device" << endl;
 		return -1;
 	}
 
-	cout << "ÇëÑ¡ÔñÍø¿¨Éè±¸:" << "1-" << j << endl;
-	cin >> inum ;
+	cout << "Please select a network card device:" << "1-" << j << endl;
+	cin >> inum;
 	if (inum < 1 || inum >j)
 	{
-		cout << "Ñ¡Ïî´íÎó£¬Ã»ÓĞ¸ÃÑ¡ÏîµÄÍø¿¨" << endl;
+		cout << "Wrong option, NIC without this option" << endl;
 		pcap_freealldevs(alldevs);
 		return -1;
 	}
 
 
-	/*µ÷µ½Ñ¡ÖĞµÄÍø¿¨Éè±¸*/
+	/*è°ƒåˆ°é€‰ä¸­çš„ç½‘å¡è®¾å¤‡*/
 	for (d = alldevs, j = 1; j != inum; j++, d = d->next)
 	{
 	}
 
-    /*¿ªÆôÉè±¸*/
+	/*å¼€å¯è®¾å¤‡*/
 	if ((adhandle = pcap_open(d->name, 1000, PCAP_OPENFLAG_PROMISCUOUS, 100, NULL, errbuf)) == NULL)
-		{
-			cout << "ÎŞ·¨¿ªÆôÉè±¸" << endl;
-			pcap_freealldevs(alldevs);
-			return -1;
-		}
-		else if (pcap_datalink(adhandle) != DLT_EN10MB)
-		{
-			cout << "²»ÊÇÒÔÌ«Íø£¬ÎŞ·¨Ê¹ÓÃ" << endl;
-			pcap_freealldevs(alldevs);
-			return -1;
-		}
+	{
+		cout << "Wrong option, NIC without this option..." << endl;
+		pcap_freealldevs(alldevs);
+		return -1;
+	}
+	else if (pcap_datalink(adhandle) != DLT_EN10MB)
+	{
+		cout << "Not Ethernet, not available" << endl;
+		pcap_freealldevs(alldevs);
+		return -1;
+	}
 
 	return 1;
 }
 
-/*»ñÈ¡×Ô¼ºµÄÖ÷»úµÄIPµØÖ·ºÍMACµØÖ·*/
+/*è·å–è‡ªå·±çš„ä¸»æœºçš„IPåœ°å€å’ŒMACåœ°å€*/
 int GetSelfMac()
 {
-	struct pcap_pkthdr *pkt_header;
-	const u_char *pkt_data;
-	unsigned char sendbuf[42] = { 0 }; // ·¢ËÍ»º³åÇø£¬Ò²ÊÇarp°üµÄ´óĞ¡
+	struct pcap_pkthdr* pkt_header;
+	const u_char* pkt_data;
+	unsigned char sendbuf[42] = { 0 }; // å‘é€ç¼“å†²åŒºï¼Œä¹Ÿæ˜¯arpåŒ…çš„å¤§å°
 	int i = -1;
 	int res;
 	ethernet_head eh;
@@ -162,9 +162,9 @@ int GetSelfMac()
 	ah.protocol_type = htons(ETH_IP);
 	ah.hardware_add_len = 6;
 	ah.protocol_add_len = 4;
-	ah.source_ip_add = inet_addr("222.220.23.1"); //Ô´ipµØÖ·Î»ÈÎÒâµÄipµØÖ·
+	ah.source_ip_add = inet_addr("222.220.23.1"); //æºipåœ°å€ä½ä»»æ„çš„ipåœ°å€
 	ah.operation_field = htons(ARP_REQUEST);
-	ah.dest_ip_add = inet_addr("192.168.1.2");
+	ah.dest_ip_add = inet_addr("192.168.1.3");
 
 	memset(sendbuf, 0, sizeof(sendbuf));
 	memcpy(sendbuf, &eh, sizeof(eh));
@@ -173,18 +173,18 @@ int GetSelfMac()
 	memcpy(sendbuf + sizeof(eh) + 24, &ah.dest_ip_add, 4);
 
 	if (pcap_sendpacket(adhandle, sendbuf, 42) == 0)
-		cout << "·¢ËÍarp°ü³É¹¦" << endl;
+		cout << "Send arp package successfully" << endl;
 	else
-		cout << "·¢ËÍarp°üÊ§°Ü" << GetLastError() << endl;
+		cout << "Sending arp package failed" << GetLastError() << endl;
 
-	//µÃµ½°üµÄ»Ø¸´
+	//å¾—åˆ°åŒ…çš„å›å¤
 	while ((res = pcap_next_ex(adhandle, &pkt_header, &pkt_data)) > 0)
 	{
-		if (*(unsigned short *)(pkt_data + 12) == htons(ETH_ARP) &&
+		if (*(unsigned short*)(pkt_data + 12) == htons(ETH_ARP) &&
 			*(unsigned short*)(pkt_data + 20) == htons(ARP_REPLY) &&
 			*(unsigned long*)(pkt_data + 38) == inet_addr("222.220.23.1"))
 		{
-			cout << "±¾»úÍø¿¨ÎïÀíµØÖ·£º";
+			cout << "Local network card physical address";
 			for (i = 0; i < 5; i++)
 			{
 				selfMac[i] = *(unsigned char*)(pkt_data + 22 + i);
@@ -199,10 +199,10 @@ int GetSelfMac()
 	}
 
 	if (res == 0)
-		cout << "³¬Ê±£¡½ÓÊÕÍøÂç°ü³¬Ê±" << endl;
+		cout << "time out! Receive network packet timeout" << endl;
 
 	if (res == -1)
-		cout << "¶ÁÈ¡ÍøÂç°üÊ±´íÎó" << endl;
+		cout << "Error reading network packet" << endl;
 
 	if (i == 6)
 		return 1;
@@ -210,12 +210,12 @@ int GetSelfMac()
 		return 0;
 }
 
-//·¢ËÍarpÇëÇó
+//å‘é€arpè¯·æ±‚
 unsigned int _stdcall sendArpPacket(void* arglist)
 {
 	unsigned char sendbuf[42];
 	unsigned long ip;
-	const char iptosendh[20] = {0};
+	const char iptosendh[20] = { 0 };
 	ethernet_head eh;
 	arp_head ah;
 
@@ -246,10 +246,10 @@ unsigned int _stdcall sendArpPacket(void* arglist)
 
 			if (pcap_sendpacket(adhandle, sendbuf, 42) == 0)
 			{
-				//cout << "·¢°ü³É¹¦" << endl;
+				//cout << "å‘åŒ…æˆåŠŸ" << endl;
 			}
 			else
-				cout << "·¢°üÊ§°Ü" << GetLastError() << endl;
+				cout << "Packet failure" << GetLastError() << endl;
 		}
 	}
 
@@ -259,21 +259,21 @@ unsigned int _stdcall sendArpPacket(void* arglist)
 }
 
 
-//½ÓÊÕARPÏàÓ¦½ø³Ì
-unsigned int  _stdcall GetlivePc(void *arglist)
+//æ¥æ”¶ARPç›¸åº”è¿›ç¨‹
+unsigned int  _stdcall GetlivePc(void* arglist)
 {
 	int res;
 	int aliveNum = 0;
 
-	struct pcap_pkthdr *pkt_header;
-	const u_char *pkt_data;
+	struct pcap_pkthdr* pkt_header;
+	const u_char* pkt_data;
 	unsigned char tempMac[6];
 
 	while (TRUE)
 	{
 		if (flag)
 		{
-			cout << "É¨ÃèÍê±Ï£¬¼àÌı³ÌĞòÍË³ö" << endl;
+			cout << "After the scan is complete, the listener exits" << endl;
 			break;
 		}
 
@@ -281,18 +281,18 @@ unsigned int  _stdcall GetlivePc(void *arglist)
 		{
 			if (*(unsigned short*)(pkt_data + 12) == htons(ETH_ARP))
 			{
-				arp_packet *recv = (arp_packet*)pkt_data;
+				arp_packet* recv = (arp_packet*)pkt_data;
 
 				recv->ah.source_ip_add = *(unsigned long*)(pkt_data + 28);
 				if (*(unsigned short*)(pkt_data + 20) == htons(ARP_REPLY))
 				{
-					cout << "²¶»ñµ½µÄARP°ü£º";
-					cout << "IPµØÖ·£º" << (unsigned long)(recv->ah.source_ip_add & 255) << "." << (unsigned long)((recv->ah.source_ip_add >> 8) & 255) << "." << (unsigned long)((recv->ah.source_ip_add >> 16) & 255) << "." << (unsigned long)((recv->ah.source_ip_add >> 24) & 255) << "         ";
+					cout << "Captured ARP package";
+					cout << "IP addressï¼š" << (unsigned long)(recv->ah.source_ip_add & 255) << "." << (unsigned long)((recv->ah.source_ip_add >> 8) & 255) << "." << (unsigned long)((recv->ah.source_ip_add >> 16) & 255) << "." << (unsigned long)((recv->ah.source_ip_add >> 24) & 255) << "   ";
 					pcGroup[aliveNum].ip = *(unsigned long*)(pkt_data + 28);
 					memcpy(pcGroup[aliveNum].mac, (pkt_data + 22), 6);
 					aliveNum++;
 
-					cout << "MACµØÖ·£º";
+					cout << "MAC address";
 					for (int i = 0; i < 6; i++)
 					{
 						tempMac[i] = *((unsigned char*)(pkt_data + 22 + i));
@@ -310,8 +310,8 @@ unsigned int  _stdcall GetlivePc(void *arglist)
 	{
 		if (pcGroup[j].ip != 0)
 		{
-			cout << "IPµØÖ·£º" << (pcGroup[j].ip & 255) << "." << ((pcGroup[j].ip >> 8) & 255) << "." << ((pcGroup[j].ip >> 16) & 255) << "." << ((pcGroup[j].ip >> 24) & 255) << "         ";
-			printf("MACµØÖ·£º %2x - %2x - %2x - %2x - %2x - %2x\n", pcGroup[j].mac[0], pcGroup[j].mac[1], pcGroup[j].mac[2], pcGroup[j].mac[3], pcGroup[j].mac[4], pcGroup[j].mac[5]);
+			cout << "IP address:" << (pcGroup[j].ip & 255) << "." << ((pcGroup[j].ip >> 8) & 255) << "." << ((pcGroup[j].ip >> 16) & 255) << "." << ((pcGroup[j].ip >> 24) & 255) << "         ";
+			printf("MACaddress: %2x - %2x - %2x - %2x - %2x - %2x\n", pcGroup[j].mac[0], pcGroup[j].mac[1], pcGroup[j].mac[2], pcGroup[j].mac[3], pcGroup[j].mac[4], pcGroup[j].mac[5]);
 		}
 	}
 
@@ -325,21 +325,21 @@ int main()
 	HANDLE hThread1, hThread2;
 	string fip;
 	string sip;
-	cout << "ÇëÊäÈëµÚÒ»¸öIP£º" << endl;
+	cout << "Please enter the first IP" << endl;
 	cin >> fip;
-	cout << "ÄãÊäÈëµÄµÚÒ»¸öIP£º" << fip << endl;
+	cout << "The first IP you entered" << fip << endl;
 
-	cout << "ÇëÊäÈëµÚ¶ş¸öIP£º" << endl;
+	cout << "Please enter the second IP" << endl;
 	cin >> sip;
-	cout << "ÄãÊäÈëµÄµÚ¶ş¸öIP:" << sip << endl;
+	cout << "The second IP you entered" << sip << endl;
 
 	cout << fip << endl;
 	cout << sip << endl;
 
 	firstip = inet_addr(fip.data());
 	secondip = inet_addr(sip.data());
-	cout << "µÚÒ»¸öÍøÂçµØÖ·:" << firstip << endl;
-	cout << "µÚ¶ş¸öÍøÂçµØÖ·:" << secondip << endl;
+	cout << "First network address" << firstip << endl;
+	cout << "The second network address" << secondip << endl;
 
 
 	HostNum = htonl(secondip) - htonl(firstip) + 1;
@@ -353,6 +353,6 @@ int main()
 	CloseHandle(hThread1);
 	CloseHandle(hThread2);
 	CloseHandle(mThread);
-    return 0;
+	return 0;
 }
 
